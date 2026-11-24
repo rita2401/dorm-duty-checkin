@@ -1,0 +1,587 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="light dark" />
+<link rel="icon" href="data:," />
+<title>宿舍值日打卡</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet" />
+<style>
+:root {
+--bg: #f2f6f3;
+--surface: #ffffff;
+--surface-2: #e9f1ec;
+--ink: #16302a;
+--muted: #5d746b;
+--line: #d8e4dd;
+--accent: #0d7a5c;
+--accent-ink: #ffffff;
+--accent-soft: #dcf0e7;
+--pop: #e2603f;
+--pop-soft: #fde9e2;
+--gold: #b9821c;
+--shadow: 0 10px 28px rgba(18, 52, 42, 0.09);
+}
+@media (prefers-color-scheme: dark) {
+:root {
+--bg: #0e1512;
+--surface: #18211d;
+--surface-2: #1f2b26;
+--ink: #e9f3ee;
+--muted: #9db4a9;
+--line: #2c3d36;
+--accent: #35c294;
+--accent-ink: #08231a;
+--accent-soft: #17382d;
+--pop: #ff8a68;
+--pop-soft: #3d241c;
+--gold: #e0aa4e;
+--shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
+}
+}
+* { box-sizing: border-box;}
+html { -webkit-text-size-adjust: 100%;}
+body {
+margin: 0;
+background: var(--bg);
+color: var(--ink);
+font-family: "Noto Sans SC", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, sans-serif;
+line-height: 1.55;
+}
+.wrap { max-width: 680px; margin: 0 auto; padding: 20px 16px 48px;}
+
+/* ---------- 本周值日 ---------- */
+.duty-card {
+background: var(--accent);
+color: #fff;
+border-radius: 22px;
+padding: 22px 20px 20px;
+box-shadow: var(--shadow);
+position: relative;
+overflow: hidden;
+}
+@media (prefers-color-scheme: dark) {.duty-card { color: #06231a;}}
+.duty-card::after {
+content: "";
+position: absolute;
+right: -46px; top: -46px;
+width: 150px; height: 150px;
+border-radius: 50%;
+border: 26px solid rgba(255,255,255,0.16);
+}
+.duty-top { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; position: relative; z-index: 1;}
+.duty-label { font-size: 14px; font-weight: 700; letter-spacing: 0.06em; opacity: 0.85;}
+.duty-week { font-size: 13px; opacity: 0.85; white-space: nowrap;}
+.duty-name { font-size: 44px; font-weight: 900; line-height: 1.15; margin: 6px 0 2px; position: relative; z-index: 1;}
+.duty-dates { font-size: 15px; opacity: 0.92; position: relative; z-index: 1;}
+.duty-foot { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; position: relative; z-index: 1;}
+.duty-chip {
+background: rgba(255,255,255,0.18);
+border-radius: 999px;
+padding: 5px 12px;
+font-size: 13px; font-weight: 500;
+}
+
+/* ---------- 版块 ---------- */
+section { margin-top: 28px;}
+h2 { font-size: 19px; font-weight: 900; margin: 0 0 4px;}
+.sub { color: var(--muted); font-size: 13.5px; margin: 0 0 14px;}
+.card {
+background: var(--surface);
+border: 1px solid var(--line);
+border-radius: 18px;
+padding: 18px 16px;
+box-shadow: var(--shadow);
+}
+
+/* ---------- 两版切换 ---------- */
+.tabs {
+display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+background: var(--surface-2);
+border-radius: 14px; padding: 6px;
+margin-bottom: 14px;
+}
+.tab {
+appearance: none; border: 0; cursor: pointer;
+min-height: 48px; border-radius: 10px;
+background: transparent; color: var(--muted);
+font: inherit; font-weight: 700; font-size: 15px;
+padding: 8px 6px;
+}
+.tab small { display: block; font-size: 12px; font-weight: 500;}
+.tab[aria-selected="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 2px 8px rgba(18,52,42,0.12);}
+.tab:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px;}
+
+.field-label { font-size: 13px; font-weight: 700; color: var(--muted); margin: 16px 0 8px;}
+.field-label:first-child { margin-top: 0;}
+
+.names { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;}
+@media (max-width: 420px) {.names { grid-template-columns: repeat(2, 1fr);}}
+.name-btn {
+appearance: none; cursor: pointer; font: inherit;
+min-height: 46px; padding: 8px 4px;
+border-radius: 12px; border: 1.5px solid var(--line);
+background: var(--surface); color: var(--ink);
+font-weight: 700; font-size: 15.5px;
+}
+.name-btn[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); color: var(--accent);}
+
+.tasks { display: flex; flex-direction: column; gap: 8px;}
+.task {
+appearance: none; cursor: pointer; font: inherit; text-align: left;
+display: flex; align-items: center; gap: 12px;
+width: 100%; min-height: 56px; padding: 10px 12px;
+border-radius: 12px; border: 1.5px solid var(--line);
+background: var(--surface); color: var(--ink);
+}
+.task.box {
+flex: 0 0 auto; width: 26px; height: 26px; border-radius: 8px;
+border: 2px solid var(--line);
+display: grid; place-items: center;
+color: transparent;
+}
+.task.box svg { width: 15px; height: 15px;}
+.task.t-name { font-weight: 700; font-size: 15.5px; display: block;}
+.task.t-freq { font-size: 12.5px; color: var(--muted); display: block;}
+.task[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft);}
+.task[aria-pressed="true"].box { background: var(--accent); border-color: var(--accent); color: #fff;}
+@media (prefers-color-scheme: dark) {.task[aria-pressed="true"].box { color: #06231a;}}
+.task[aria-pressed="true"].t-name { color: var(--accent);}
+
+.progress-row { display: flex; align-items: center; gap: 12px; margin-top: 14px;}
+.progress-track { flex: 1; height: 8px; border-radius: 99px; background: var(--surface-2); overflow: hidden;}
+.progress-fill { height: 100%; width: 0%; background: var(--accent); border-radius: 99px; transition: width 0.25s ease;}
+.progress-text { font-size: 13.5px; font-weight: 700; color: var(--muted); white-space: nowrap;}
+.mini-btn {
+appearance: none; border: 0; background: none; cursor: pointer; font: inherit;
+color: var(--accent); font-weight: 700; font-size: 13.5px;
+min-height: 36px; padding: 6px 8px; white-space: nowrap;
+}
+
+.preview {
+background: var(--surface-2);
+border-radius: 12px;
+padding: 14px;
+font-size: 14.5px;
+white-space: pre-wrap; word-break: break-word;
+margin-top: 6px;
+min-height: 96px;
+}
+.big-btn {
+appearance: none; border: 0; cursor: pointer; font: inherit;
+width: 100%; min-height: 52px; margin-top: 14px;
+border-radius: 14px;
+background: var(--accent); color: var(--accent-ink);
+font-size: 16.5px; font-weight: 900;
+display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.big-btn:active { transform: scale(0.99);}
+.hint { font-size: 12.5px; color: var(--muted); margin: 10px 0 0; text-align: center;}
+.toast {
+display: none; margin-top: 12px; text-align: center;
+font-size: 14px; font-weight: 700; color: var(--accent);
+}
+.toast.show { display: block;}
+
+/* ---------- 记录版 ---------- */
+.stats { display: flex; gap: 8px; margin-bottom: 14px;}
+.stat {
+flex: 1; background: var(--surface-2); border-radius: 12px;
+padding: 10px 8px; text-align: center;
+}
+.stat b { display: block; font-size: 22px; font-weight: 900; line-height: 1.2;}
+.stat span { font-size: 12px; color: var(--muted);}
+.records { list-style: none; margin: 14px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px;}
+.record {
+display: flex; gap: 10px; align-items: flex-start;
+background: var(--surface-2); border-radius: 12px; padding: 12px;
+}
+.record.num {
+flex: 0 0 auto; width: 26px; height: 26px; border-radius: 50%;
+background: var(--accent); color: var(--accent-ink);
+display: grid; place-items: center; font-size: 13px; font-weight: 900; margin-top: 1px;
+}
+.record.r-main { flex: 1; min-width: 0; font-size: 14.5px;}
+.record.r-main b { font-size: 15.5px;}
+.record.r-sub { color: var(--muted); font-size: 12.5px; margin-top: 2px;}
+.record.del {
+appearance: none; border: 0; background: none; cursor: pointer;
+color: var(--muted); font-size: 18px; line-height: 1;
+min-width: 36px; min-height: 36px; border-radius: 8px;
+}
+.empty { color: var(--muted); font-size: 14px; text-align: center; padding: 18px 0 6px; margin: 0;}
+
+/* ---------- 清扫内容 & 轮换表 ---------- */
+.chores { list-style: none; margin: 0; padding: 0;}
+.chores li {
+display: flex; justify-content: space-between; align-items: baseline; gap: 14px;
+padding: 11px 2px; border-bottom: 1px dashed var(--line);
+}
+.chores li:last-child { border-bottom: 0;}
+.chores.c-name { font-weight: 700; font-size: 15.5px; white-space: nowrap;}
+.chores.c-freq { color: var(--muted); font-size: 13px; text-align: right;}
+
+table { width: 100%; border-collapse: collapse; font-size: 14.5px;}
+th { text-align: left; color: var(--muted); font-size: 12.5px; font-weight: 700; padding: 6px 8px; border-bottom: 1.5px solid var(--line);}
+td { padding: 10px 8px; border-bottom: 1px solid var(--line);}
+tr:last-child td { border-bottom: 0;}
+tr.now td { background: var(--accent-soft); font-weight: 700;}
+tr.now td:first-child { border-radius: 10px 0 0 10px;}
+tr.now td:last-child { border-radius: 0 10px 10px 0;}
+.now-tag {
+display: inline-block; margin-left: 6px; padding: 1px 8px;
+background: var(--pop); color: #fff; border-radius: 999px;
+font-size: 11.5px; font-weight: 700; vertical-align: 2px;
+}
+@media (prefers-color-scheme: dark) {.now-tag { color: #2b130b;}}
+footer { margin-top: 30px; text-align: center; color: var(--muted); font-size: 12.5px;}
+@media (prefers-reduced-motion: reduce) {.progress-fill { transition: none;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- 本周值日 -->
+<div class="duty-card">
+<div class="duty-top">
+<span class="duty-label">本周值日</span>
+<span class="duty-week" id="dutyWeek"></span>
+</div>
+<div class="duty-name" id="dutyName">—</div>
+<div class="duty-dates" id="dutyDates"></div>
+<div class="duty-foot">
+<span class="duty-chip" id="dutyToday"></span>
+<span class="duty-chip" id="dutyLeft"></span>
+</div>
+</div>
+
+<!-- 打卡区：两版 -->
+<section>
+<h2>值日打卡</h2>
+<p class="sub">两版都放这儿了，点上面的标签切换，用哪个顺手用哪个。</p>
+
+<div class="tabs" role="tablist" aria-label="打卡版本">
+<button class="tab" role="tab" id="tabA" aria-selected="true" aria-controls="panelA">
+接龙版<small>生成文字，发微信群接龙</small>
+</button>
+<button class="tab" role="tab" id="tabB" aria-selected="false" aria-controls="panelB">
+记录版<small>打卡记在页面里，看完整列表</small>
+</button>
+</div>
+
+<!-- A：接龙版 -->
+<div class="card" id="panelA" role="tabpanel" aria-labelledby="tabA">
+<p class="field-label">我是谁</p>
+<div class="names" id="namesA"></div>
+
+<p class="field-label">本周做完的（点一下打勾）</p>
+<div class="tasks" id="tasksA"></div>
+
+<div class="progress-row">
+<div class="progress-track"><div class="progress-fill" id="fillA"></div></div>
+<span class="progress-text" id="countA">0 / 4</span>
+<button class="mini-btn" id="allA" type="button">全部做完</button>
+</div>
+
+<p class="field-label">接龙文字（自动生成）</p>
+<div class="preview" id="previewA"></div>
+<button class="big-btn" id="copyBtn" type="button">复制接龙文字</button>
+<div class="toast" id="toastA">已复制，去微信群里粘贴发送就行</div>
+<p class="hint">室友点开这个页面，各自打勾、复制自己那条发到群里，就是接龙。</p>
+</div>
+
+<!-- B：记录版 -->
+<div class="card" id="panelB" role="tabpanel" aria-labelledby="tabB" hidden>
+<div class="stats">
+<div class="stat"><b id="statTotal">0</b><span>总打卡（次）</span></div>
+<div class="stat"><b id="statWeek">0</b><span>本周打卡（次）</span></div>
+<div class="stat"><b id="statPeople">0</b><span>已打卡人数</span></div>
+</div>
+
+<p class="field-label">我是谁</p>
+<div class="names" id="namesB"></div>
+
+<p class="field-label">本周做完的（点一下打勾）</p>
+<div class="tasks" id="tasksB"></div>
+
+<div class="progress-row">
+<div class="progress-track"><div class="progress-fill" id="fillB"></div></div>
+<span class="progress-text" id="countB">0 / 4</span>
+<button class="mini-btn" id="allB" type="button">全部做完</button>
+</div>
+
+<button class="big-btn" id="submitB" type="button">提交打卡</button>
+<div class="toast" id="toastB">打卡成功，已加到下面的列表里</div>
+
+<p class="field-label">打卡接龙列表</p>
+<p class="empty" id="emptyB">还没有人打卡，来打第一条吧。</p>
+<ol class="records" id="recordsB"></ol>
+<p class="hint">记录只留在这个页面里，关掉或刷新就清空了。</p>
+</div>
+</section>
+
+<!-- 清扫内容 -->
+<section>
+<h2>清扫内容</h2>
+<p class="sub">一周内做完就行，周日晚上之前全部搞定。</p>
+<div class="card">
+<ul class="chores" id="choreList"></ul>
+</div>
+</section>
+
+<!-- 轮换表 -->
+<section>
+<h2>轮换表</h2>
+<p class="sub">按周一到周日算一周，顺序：戴滢莹 → 邓迪帆 → 邓凯琳 → 戴纯婧，循环往下排。</p>
+<div class="card" style="padding: 8px 10px;">
+<table>
+<thead>
+<tr><th style="width:64px;">周次</th><th>日期</th><th style="width:96px;">值日人</th></tr>
+</thead>
+<tbody id="rotaBody"></tbody>
+</table>
+</div>
+</section>
+
+<footer>值日周从 2026 年 11 月 23 日（周一）开始轮换</footer>
+</div>
+
+<script>
+var MEMBERS = ["戴滢莹", "邓迪帆", "邓凯琳", "戴纯婧"];
+var TASKS = [
+{ name: "厕所倒垃圾", freq: "一周倒 2–3 次，满了随时倒，周日清空换新袋"},
+{ name: "厕所地面", freq: "一周扫 2–3 次、拖 2 次，地漏头发每周清一次"},
+{ name: "洗手台", freq: "台面、水龙头一周擦 2–3 次，镜面一周擦 1–2 次"},
+{ name: "洗手台地面", freq: "一周扫 2–3 次，有水及时拖干"}
+];
+var WEEKDAYS = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
+var ANCHOR = new Date(2026, 10, 23); // 第一周周一：2026-11-23
+var DAY = 24 * 60 * 60 * 1000;
+var CHECK = '<svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2.5 8.5l3.5 3.5 7-8" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+function startOfDay(d) { return new Date(d.getFullYear(), d.getMonth(), d.getDate());}
+function mondayOf(d) {
+var s = startOfDay(d);
+var shift = (s.getDay() + 6) % 7; // 周一为一周开始
+return new Date(s.getTime() - shift * DAY);
+}
+function addDays(d, n) { return new Date(d.getTime() + n * DAY);}
+function weekIndexOf(d) {
+return Math.round((mondayOf(d) - mondayOf(ANCHOR)) / (7 * DAY));
+}
+function fmtMD(d) { return (d.getMonth() + 1) + "月" + d.getDate() + "日";}
+function fmtRange(mon) { return fmtMD(mon) + " — " + fmtMD(addDays(mon, 6));}
+function dutyOf(weekIdx) { return MEMBERS[((weekIdx % 4) + 4) % 4];}
+
+var now = new Date();
+var curWeek = weekIndexOf(now);
+var curMonday = mondayOf(now);
+var curSunday = addDays(curMonday, 6);
+var curDuty = dutyOf(curWeek);
+
+/* ---------- 顶部本周卡 ---------- */
+document.getElementById("dutyName").textContent = curDuty;
+document.getElementById("dutyWeek").textContent = "第 " + (curWeek + 1) + " 周";
+document.getElementById("dutyDates").textContent = fmtRange(curMonday) + "（周一至周日）";
+document.getElementById("dutyToday").textContent = "今天 " + fmtMD(now) + " " + WEEKDAYS[now.getDay()];
+var leftDays = Math.round((startOfDay(curSunday) - startOfDay(now)) / DAY);
+document.getElementById("dutyLeft").textContent = leftDays === 0? "今天周日，记得收尾交接": "距周日还有 " + leftDays + " 天";
+
+/* ---------- 清扫内容 ---------- */
+var choreList = document.getElementById("choreList");
+TASKS.forEach(function (t) {
+var li = document.createElement("li");
+var n = document.createElement("span"); n.className = "c-name"; n.textContent = t.name;
+var f = document.createElement("span"); f.className = "c-freq"; f.textContent = t.freq;
+li.appendChild(n); li.appendChild(f);
+choreList.appendChild(li);
+});
+
+/* ---------- 轮换表（从本周起 8 周） ---------- */
+var rotaBody = document.getElementById("rotaBody");
+for (var i = 0; i < 8; i++) {
+var wi = curWeek + i;
+var mon = addDays(curMonday, i * 7);
+var tr = document.createElement("tr");
+if (i === 0) tr.className = "now";
+var td1 = document.createElement("td"); td1.textContent = "第 " + (wi + 1) + " 周";
+var td2 = document.createElement("td"); td2.textContent = fmtRange(mon);
+var td3 = document.createElement("td"); td3.textContent = dutyOf(wi);
+if (i === 0) {
+var tag = document.createElement("span"); tag.className = "now-tag"; tag.textContent = "本周";
+td3.appendChild(tag);
+}
+tr.appendChild(td1); tr.appendChild(td2); tr.appendChild(td3);
+rotaBody.appendChild(tr);
+}
+
+/* ---------- 打卡状态（两版各一份） ---------- */
+function makeState() { return { name: curDuty, done: {}};}
+var stateA = makeState();
+var stateB = makeState();
+
+function buildPicker(containerId, state, onChange) {
+var box = document.getElementById(containerId);
+MEMBERS.forEach(function (m) {
+var b = document.createElement("button");
+b.type = "button"; b.className = "name-btn"; b.textContent = m;
+b.setAttribute("aria-pressed", m === state.name? "true": "false");
+b.addEventListener("click", function () {
+state.name = m;
+var btns = box.querySelectorAll(".name-btn");
+for (var k = 0; k < btns.length; k++) btns[k].setAttribute("aria-pressed", btns[k].textContent === m? "true": "false");
+onChange();
+});
+box.appendChild(b);
+});
+}
+
+function buildTasks(containerId, state, onChange) {
+var box = document.getElementById(containerId);
+TASKS.forEach(function (t, idx) {
+var b = document.createElement("button");
+b.type = "button"; b.className = "task";
+b.setAttribute("aria-pressed", "false");
+var boxSpan = document.createElement("span"); boxSpan.className = "box"; boxSpan.innerHTML = CHECK;
+var txt = document.createElement("span");
+var nm = document.createElement("span"); nm.className = "t-name"; nm.textContent = t.name;
+var fq = document.createElement("span"); fq.className = "t-freq"; fq.textContent = t.freq;
+txt.appendChild(nm); txt.appendChild(fq);
+b.appendChild(boxSpan); b.appendChild(txt);
+b.addEventListener("click", function () {
+state.done[idx] =!state.done[idx];
+b.setAttribute("aria-pressed", state.done[idx]? "true": "false");
+onChange();
+});
+box.appendChild(b);
+});
+}
+
+function doneCount(state) {
+var c = 0;
+TASKS.forEach(function (_, idx) { if (state.done[idx]) c++;});
+return c;
+}
+function syncProgress(state, fillId, countId) {
+var c = doneCount(state);
+document.getElementById(fillId).style.width = (c / TASKS.length * 100) + "%";
+document.getElementById(countId).textContent = c + " / " + TASKS.length;
+}
+function setAll(containerId, state, onChange) {
+var all = doneCount(state) === TASKS.length;
+TASKS.forEach(function (_, idx) { state.done[idx] =!all;});
+var btns = document.getElementById(containerId).querySelectorAll(".task");
+for (var k = 0; k < btns.length; k++) btns[k].setAttribute("aria-pressed",!all? "true": "false");
+onChange();
+}
+function taskLines(state) {
+return TASKS.map(function (t, idx) { return (state.done[idx]? "☑ ": "☐ ") + t.name;});
+}
+
+/* ---------- A：接龙版 ---------- */
+function updateA() {
+syncProgress(stateA, "fillA", "countA");
+var c = doneCount(stateA);
+var head = "";
+var line1 = stateA.name + " · " + fmtMD(now) + "（" + WEEKDAYS[now.getDay()] + "）";
+var line2 = "本周值日（第 " + (curWeek + 1) + " 周 " + fmtRange(curMonday) + "）：" +
+(c === TASKS.length? "已全部完成 ✅": "已完成 " + c + "/" + TASKS.length);
+document.getElementById("previewA").textContent = head + "\n" + line1 + "\n" + line2 + "\n" + taskLines(stateA).join("\n");
+}
+buildPicker("namesA", stateA, updateA);
+buildTasks("tasksA", stateA, updateA);
+document.getElementById("allA").addEventListener("click", function () { setAll("tasksA", stateA, updateA);});
+updateA();
+
+document.getElementById("copyBtn").addEventListener("click", function () {
+var text = document.getElementById("previewA").textContent;
+var toast = document.getElementById("toastA");
+function done() {
+toast.classList.add("show");
+setTimeout(function () { toast.classList.remove("show");}, 2600);
+}
+if (navigator.clipboard && navigator.clipboard.writeText) {
+navigator.clipboard.writeText(text).then(done, function () { fallbackCopy(text); done();});
+} else { fallbackCopy(text); done();}
+});
+function fallbackCopy(text) {
+var ta = document.createElement("textarea");
+ta.value = text;
+ta.style.position = "fixed"; ta.style.opacity = "0";
+document.body.appendChild(ta);
+ta.select();
+try { document.execCommand("copy");} catch (e) {}
+document.body.removeChild(ta);
+}
+
+/* ---------- B：记录版 ---------- */
+var records = [];
+function updateB() { syncProgress(stateB, "fillB", "countB");}
+buildPicker("namesB", stateB, updateB);
+buildTasks("tasksB", stateB, updateB);
+document.getElementById("allB").addEventListener("click", function () { setAll("tasksB", stateB, updateB);});
+updateB();
+
+function pad(n) { return (n < 10? "0": "") + n;}
+function renderRecords() {
+var list = document.getElementById("recordsB");
+list.innerHTML = "";
+document.getElementById("emptyB").style.display = records.length? "none": "block";
+records.forEach(function (r, i) {
+var li = document.createElement("li"); li.className = "record";
+var num = document.createElement("span"); num.className = "num"; num.textContent = i + 1;
+var main = document.createElement("div"); main.className = "r-main";
+var b = document.createElement("b"); b.textContent = r.name;
+main.appendChild(b);
+main.appendChild(document.createTextNode(" · " + r.summary));
+var sub = document.createElement("div"); sub.className = "r-sub"; sub.textContent = r.detail;
+main.appendChild(sub);
+var del = document.createElement("button");
+del.type = "button"; del.className = "del"; del.textContent = "×";
+del.setAttribute("aria-label", "删除这条打卡");
+del.addEventListener("click", function () { records.splice(i, 1); renderRecords();});
+li.appendChild(num); li.appendChild(main); li.appendChild(del);
+list.appendChild(li);
+});
+var weekCount = 0; var people = {};
+records.forEach(function (r) { if (r.week === curWeek) weekCount++; people[r.name] = true;});
+document.getElementById("statTotal").textContent = records.length;
+document.getElementById("statWeek").textContent = weekCount;
+document.getElementById("statPeople").textContent = Object.keys(people).length;
+}
+renderRecords();
+
+document.getElementById("submitB").addEventListener("click", function () {
+var c = doneCount(stateB);
+var t = new Date();
+var doneNames = TASKS.filter(function (_, idx) { return stateB.done[idx];}).map(function (x) { return x.name;});
+records.push({
+name: stateB.name,
+week: curWeek,
+summary: (c === TASKS.length? "本周值日已全部完成 ✅": "已完成 " + c + "/" + TASKS.length + " 项"),
+detail: "第 " + (curWeek + 1) + " 周（" + fmtRange(curMonday) + "）· " + fmtMD(t) + " " + WEEKDAYS[t.getDay()] + " " + pad(t.getHours()) + ":" + pad(t.getMinutes()) +
+(doneNames.length? " · 完成：" + doneNames.join("、"): " · 还没勾任何一项")
+});
+renderRecords();
+var toast = document.getElementById("toastB");
+toast.classList.add("show");
+setTimeout(function () { toast.classList.remove("show");}, 2600);
+});
+
+/* ---------- 两版切换 ---------- */
+var tabA = document.getElementById("tabA"), tabB = document.getElementById("tabB");
+var panelA = document.getElementById("panelA"), panelB = document.getElementById("panelB");
+function switchTab(toB) {
+tabA.setAttribute("aria-selected", toB? "false": "true");
+tabB.setAttribute("aria-selected", toB? "true": "false");
+panelA.hidden = toB;
+panelB.hidden =!toB;
+}
+tabA.addEventListener("click", function () { switchTab(false);});
+tabB.addEventListener("click", function () { switchTab(true);});
+</script>
+</body>
+</html>
